@@ -41,7 +41,7 @@ MODELS: dict[str, dict] = {
         page="Clients télécom", icon="📱", grad=("#5C3D2E", "#9A6B47"),
         title="Segmentation des clients télécom",
         tagline="Un client est-il fidèle ou non ? Réponse à partir de son comportement d'usage.",
-        file="Customer_dataset.csv", algo="CAH · liaison moyenne", k=2, ncols=3,
+        file="Customer_dataset.csv", algo="CAH · liaison moyenne", method=("cah", "average"), k=2, ncols=3,
         columns=["Call Failure", "Complains", "Subscription Length", "Charge Amount", "Seconds of Use",
                  "Frequency of use", "Frequency of SMS", "Distinct Called Numbers", "Age Group",
                  "Status", "Age", "Customer Value"],
@@ -72,7 +72,7 @@ MODELS: dict[str, dict] = {
         page="Insuffisance cardiaque", icon="🫀", grad=("#5E2B22", "#A65A42"),
         title="Profils de patients en insuffisance cardiaque",
         tagline="Rapprochez un patient des 4 profils cliniques identifiés par KMeans.",
-        file="heart_failure_clinical_records_dataset.csv", algo="KMeans", k=4, ncols=3,
+        file="heart_failure_clinical_records_dataset.csv", algo="KMeans", method=("kmeans", None), k=4, ncols=3,
         columns=["age", "anaemia", "creatinine_phosphokinase", "diabetes", "ejection_fraction",
                  "high_blood_pressure", "platelets", "serum_creatinine", "serum_sodium", "sex",
                  "smoking", "time", "DEATH_EVENT"],
@@ -94,16 +94,18 @@ MODELS: dict[str, dict] = {
             "Variables d'entrée : 11 caractéristiques cliniques (**sans** `time` ni `DEATH_EVENT`).",
             "**log(1+x)** sur la CPK, très asymétrique.",
             "**Standardisation** (`StandardScaler`).",
-            "**KMeans** à 4 classes (`init='random'`, 500 itérations), k choisi par la méthode du coude.",
+            "**KMeans** à 4 classes (`init='random'`, 500 itérations, graine fixée), k choisi par la méthode du coude.",
+            "Comparé à une **CAH `ward`** au même k : le modèle retenu est celui qui a la meilleure silhouette (voir l'onglet Exploration).",
         ],
-        notes=["La silhouette est faible : les groupes se chevauchent. Lisez-les comme des tendances, pas comme des frontières nettes."],
+        notes=["La silhouette est faible : les groupes se chevauchent. Lisez-les comme des tendances, pas comme des frontières nettes.",
+               "Un petit groupe (quelques patients) regroupe des cas atypiques : interprétez-le avec prudence."],
         notice="Outil pédagogique de segmentation non supervisée. Il ne remplace pas un avis médical.",
     ),
     "wholesale": dict(
         page="Clients grossiste", icon="🛒", grad=("#4A3828", "#8F7452"),
         title="Segmentation des clients d'un grossiste",
         tagline="Regroupez les clients selon leurs dépenses annuelles par catégorie de produits.",
-        file="Wholesale customers data.csv", algo="KMeans", k=4, ncols=3,
+        file="Wholesale customers data.csv", algo="CAH · Ward", method=("cah", "ward"), k=4, ncols=3,
         columns=["Channel", "Region", "Fresh", "Milk", "Grocery", "Frozen", "Detergents_Paper", "Delicassen"],
         fields=[
             F("Fresh", "Produits frais", "int", step=500),
@@ -117,15 +119,18 @@ MODELS: dict[str, dict] = {
             "Variables d'entrée : les 6 dépenses annuelles (`Channel` et `Region` servent seulement à décrire les groupes).",
             "**log(1+x)** pour réduire l'asymétrie des dépenses.",
             "**Standardisation** (`StandardScaler`).",
-            "**KMeans** à 4 classes (`init='random'`, 500 itérations).",
+            "**Classification ascendante hiérarchique** : liaison `ward`, distance euclidienne, 4 classes (même k que le KMeans).",
+            "Comparée au **KMeans** au même k : la CAH obtient une silhouette un peu meilleure (voir l'onglet Exploration), d'où son choix.",
+            "Un nouveau client est affecté au **centroïde le plus proche**.",
         ],
-        notes=["Les dépenses sont en unités monétaires par an. Les groupes se chevauchent (silhouette modeste)."],
+        notes=["Les dépenses sont en unités monétaires par an. L'écart de silhouette avec le KMeans est faible : les deux modèles sont défendables.",
+               "Les groupes se chevauchent (silhouette modeste)."],
     ),
     "wheat": dict(
         page="Graines de blé", icon="🌾", grad=("#6E5428", "#B8913F"),
         title="Classification des graines de blé",
         tagline="Réglez les 7 mesures morphologiques d'une graine et découvrez son groupe.",
-        file="wheat_seeds_dataset.csv", algo="KMeans", k=4, ncols=2,
+        file="wheat_seeds_dataset.csv", algo="CAH · Ward", method=("cah", "ward"), k=4, ncols=2,
         columns=["area A", "perimeter", "compactness", "length of kernel", "width of kernel",
                  "asymmetry coefficient", "length of kernel groove"],
         fields=[
@@ -140,10 +145,12 @@ MODELS: dict[str, dict] = {
         pipeline=[
             "**Standardisation** (`StandardScaler`) des 7 variables morphologiques, pour qu'aucune ne domine les distances.",
             "**ACP à 2 composantes** pour la visualisation.",
-            "**KMeans** à 4 classes (`init='random'`, 500 itérations), k choisi par la méthode du coude.",
+            "**Classification ascendante hiérarchique** : liaison `ward`, distance euclidienne, 4 classes (même k que le KMeans).",
+            "Comparée au **KMeans** au même k : la CAH obtient une silhouette un peu meilleure (voir l'onglet Exploration), d'où son choix.",
+            "Un nouveau grain est affecté au **centroïde le plus proche**.",
         ],
-        notes=["Contrairement au notebook d'origine, les variables sont standardisées : l'aire et le périmètre ne dominent plus le KMeans.",
-               "Après standardisation, le k optimal peut changer : vérifiez la silhouette pour k=3 et k=4 avant de figer le choix."],
+        notes=["Les variables sont standardisées : l'aire et le périmètre ne dominent plus les distances.",
+               "Le jeu d'origine compte 3 variétés de blé : comparer aussi k=3 à k=4 serait pertinent."],
     ),
 }
 for _k, _c in MODELS.items():
@@ -261,7 +268,11 @@ def build(key: str, df: pd.DataFrame) -> Seg:
         order = list(np.argsort([A[raw == c, j].mean() for c in range(k)])[::-1])
         names = ["Fidèle", "Non fidèle"]
     else:
-        raw = KMeans(n_clusters=k, init="random", max_iter=500, n_init=10, random_state=42).fit_predict(M)
+        algo, link = cfg["method"]
+        if algo == "cah":
+            raw = AgglomerativeClustering(n_clusters=k, linkage=link).fit_predict(M)
+        else:
+            raw = KMeans(n_clusters=k, init="random", max_iter=500, n_init=10, random_state=42).fit_predict(M)
         order = list(pd.Series(raw).value_counts().index)
         names = [f"Groupe {i + 1}" for i in range(k)]
     remap = {old: new for new, old in enumerate(order)}
@@ -285,6 +296,11 @@ def build(key: str, df: pd.DataFrame) -> Seg:
     if key == "customer":
         km = KMeans(n_clusters=3, init="random", max_iter=500, n_init=10, random_state=42).fit_predict(M)
         seg.extra["compare"] = {"KMeans (k=3)": float(silhouette_score(M, km)), "CAH (k=2)": seg.sil}
+    if key != "customer":
+        km = KMeans(n_clusters=k, init="random", max_iter=500, n_init=10, random_state=42).fit_predict(M)
+        ca = AgglomerativeClustering(n_clusters=k, linkage="ward").fit_predict(M)
+        seg.extra["compare"] = {f"KMeans (k={k})": float(silhouette_score(M, km)),
+                                f"CAH ward (k={k})": float(silhouette_score(M, ca))}
     if key == "wholesale":
         ch = df["Channel"].map({1: "Horeca", 2: "Retail"})
         seg.extra["channel"] = pd.crosstab(labels, ch, normalize="index") * 100
@@ -581,6 +597,7 @@ def about_tab(cfg, df, seg: Seg):
             "Algorithme": cfg["algo"], "Groupes (k)": cfg["k"], "Observations": len(df),
             "Variables du modèle": len(cfg["features"]), "Silhouette": f"{seg.sil:.3f}",
             "Variance ACP (2 axes)": f"{seg.var2d:.1f} %",
+            "Plus petit groupe": f"{int(seg.sizes.min())} ({seg.sizes.min() / len(df) * 100:.1f} %)",
         }, index=["Valeur"]).T.astype(str))
         st.caption("Les modèles sont entraînés au démarrage (graine fixée) : les groupes sont reproductibles.")
 
