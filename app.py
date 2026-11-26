@@ -24,7 +24,7 @@ from sklearn.preprocessing import StandardScaler, normalize
 
 BASE = Path(__file__).parent
 DATA_DIRS = [BASE / "data", BASE]
-PALETTE = ["#6F4E37", "#D08C3F", "#B5523B", "#7A8B69", "#8E7F73", "#C9A227"]
+PALETTE = ["#6B4A35", "#C29A6B", "#A8604A", "#8E9A7E", "#B9A58C", "#4A3426"]
 INK = "#3B2A20"
 DARK = "#2B1D15"
 GRID = "#EADFCB"
@@ -303,60 +303,53 @@ def predict(seg: Seg, values):
 
 # ───────────────────────────── Style ─────────────────────────────
 CSS = """
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap');
-.stApp {font-family:'Inter',system-ui,sans-serif; color:#3B2A20;
-  background:radial-gradient(1200px 500px at 85% -10%, #F3E7D3 0%, rgba(250,245,236,0) 60%), #FAF5EC;}
-.block-container {padding-top:2.4rem; max-width:1180px;}
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@500;600&display=swap');
+.stApp {font-family:'Inter',system-ui,sans-serif; color:#3B2A20; background:#FAF6EF;}
+.block-container {padding-top:2.2rem; max-width:1120px;}
 #MainMenu, footer {visibility:hidden;}
-h1,h2,h3,h4,h5 {font-family:'Playfair Display',Georgia,serif; font-weight:600; letter-spacing:.005em; color:#3B2A20;}
-section[data-testid="stSidebar"] {background:#F4EBDB; border-right:1px solid #E6D9C3;}
-.stTabs [data-baseweb="tab-list"] {gap:.4rem; border-bottom:1px solid #E6D9C3;}
-.stTabs [data-baseweb="tab"] {font-weight:600; font-size:.96rem; color:#8A7360;}
-.stTabs [aria-selected="true"] {color:#6F4E37;}
-.stTabs [data-baseweb="tab-highlight"] {background-color:#6F4E37;}
-.stButton > button, .stFormSubmitButton > button, .stDownloadButton > button {border-radius:999px; font-weight:600;
-  border:1px solid #D9C7A8; background:#FFFDF8; color:#6F4E37; transition:all .15s ease;}
-.stButton > button:hover, .stDownloadButton > button:hover {border-color:#6F4E37; color:#6F4E37; background:#F7EEDD;}
-.stFormSubmitButton > button[kind="primaryFormSubmit"], .stFormSubmitButton > button {background:#6F4E37; color:#FFF8EC; border-color:#6F4E37; padding:.45rem 1.6rem;}
-.stFormSubmitButton > button:hover {background:#5A3E2B; color:#fff;}
-div[data-testid="stVerticalBlockBorderWrapper"] {border-radius:20px;}
-div[data-testid="stForm"] {border:none;}
-.hero {position:relative; overflow:hidden; background:linear-gradient(135deg,var(--a),var(--b)); color:#FFF8EC;
-  border-radius:26px; padding:2.3rem 2.5rem 2rem; margin-bottom:1.2rem; box-shadow:0 22px 44px -26px var(--a);}
-.hero::after {content:""; position:absolute; right:-70px; top:-90px; width:300px; height:300px; border-radius:50%;
-  background:radial-gradient(circle,rgba(255,240,215,.22),rgba(255,240,215,0) 70%);}
-.hero .t {font-family:'Playfair Display',Georgia,serif; font-size:2.35rem; font-weight:600; line-height:1.15; letter-spacing:.005em;}
-.hero .s {margin-top:.65rem; font-size:1.02rem; opacity:.92; max-width:760px; font-weight:400; line-height:1.55;}
-.chip {display:inline-block; padding:.24rem .78rem; border-radius:999px; font-size:.75rem; font-weight:600; letter-spacing:.02em;
-  margin:1rem .45rem 0 0; background:rgba(255,248,236,.16); border:1px solid rgba(255,248,236,.28); color:#FFF8EC;}
-.chip.dark {background:#F3E9D8; border:1px solid #E6D4B6; color:#6F4E37; margin:.8rem .35rem 0 0;}
-.chip.warn {background:#F8E6C8; border:1px solid #E9C98F; color:#8A5A12; margin:.8rem .35rem 0 0;}
-.kpi {background:#FFFDF8; border:1px solid #E6D9C3; border-radius:18px; padding:.95rem 1.15rem;
-  box-shadow:0 1px 2px rgba(80,50,30,.05), 0 10px 22px -18px rgba(80,50,30,.35);}
-.kpi-l {font-size:.7rem; text-transform:uppercase; letter-spacing:.1em; color:#9A8470; font-weight:600;}
-.kpi-v {font-family:'Playfair Display',Georgia,serif; font-size:1.75rem; font-weight:600; color:#3B2A20; line-height:1.3;}
+h1,h2,h3,h4,h5 {font-family:'Playfair Display',Georgia,serif; font-weight:600; color:#3B2A20; letter-spacing:0;}
+section[data-testid="stSidebar"] {background:#F3EADB; border-right:1px solid #E6D9C3;}
+.stTabs [data-baseweb="tab-list"] {gap:1.4rem; border-bottom:1px solid #E6D9C3;}
+.stTabs [data-baseweb="tab"] {font-weight:500; font-size:.95rem; color:#8A7360; padding-left:0; padding-right:0;}
+.stTabs [aria-selected="true"] {color:#3B2A20; font-weight:600;}
+.stTabs [data-baseweb="tab-highlight"] {background-color:#6B4A35;}
+.stButton > button, .stDownloadButton > button {border-radius:10px; font-weight:500; border:1px solid #DCCBAE;
+  background:#FFFDF9; color:#5A3E2B;}
+.stButton > button:hover, .stDownloadButton > button:hover {border-color:#6B4A35; color:#3B2A20; background:#F6EEDF;}
+.stFormSubmitButton > button {border-radius:10px; font-weight:600; background:#6B4A35; color:#FFF8EE;
+  border:1px solid #6B4A35; padding:.5rem 1.8rem;}
+.stFormSubmitButton > button:hover {background:#553826; border-color:#553826; color:#fff;}
+div[data-testid="stVerticalBlockBorderWrapper"] {border-radius:16px; border-color:#E6D9C3;}
+.hero {background:#F1E6D3; border:1px solid #E3D3B6; border-radius:18px; padding:1.9rem 2.2rem 1.6rem; margin-bottom:1.2rem;}
+.hero .e {font-size:.72rem; text-transform:uppercase; letter-spacing:.16em; color:#8A6A4F; font-weight:600; margin-bottom:.5rem;}
+.hero .t {font-family:'Playfair Display',Georgia,serif; font-size:2.2rem; font-weight:600; line-height:1.18; color:#3B2A20;}
+.hero .s {margin-top:.6rem; font-size:1rem; color:#6B5644; max-width:720px; line-height:1.6;}
+.chip {display:inline-block; padding:.2rem .7rem; border-radius:999px; font-size:.74rem; font-weight:500;
+  margin:1rem .4rem 0 0; background:#FFFDF9; border:1px solid #E3D3B6; color:#6B4A35;}
+.chip.dark {margin:.8rem .35rem 0 0;}
+.chip.warn {background:#F8EAD0; border-color:#E9CE98; color:#8A5A12; margin:.8rem .35rem 0 0;}
+.kpi {background:#FFFDF9; border:1px solid #E6D9C3; border-radius:14px; padding:.9rem 1.1rem;}
+.kpi-l {font-size:.68rem; text-transform:uppercase; letter-spacing:.12em; color:#9A8470; font-weight:600;}
+.kpi-v {font-family:'Playfair Display',Georgia,serif; font-size:1.65rem; font-weight:600; color:#3B2A20; line-height:1.35;}
 .kpi-s {font-size:.78rem; color:#8A7360;}
-.result {position:relative; overflow:hidden; background:linear-gradient(135deg,var(--c),color-mix(in srgb,var(--c) 55%,#2B1D15));
-  color:#FFF8EC; border-radius:24px; padding:1.6rem 2rem; margin:1.2rem 0 1rem; box-shadow:0 20px 36px -22px var(--c);}
-.result::after {content:""; position:absolute; right:-60px; top:-70px; width:220px; height:220px; border-radius:50%;
-  background:radial-gradient(circle,rgba(255,240,215,.2),rgba(255,240,215,0) 70%);}
-.result .r-top {font-size:.72rem; text-transform:uppercase; letter-spacing:.16em; opacity:.8; font-weight:600;}
-.result .r-name {font-family:'Playfair Display',Georgia,serif; font-size:2.3rem; font-weight:600; line-height:1.2;}
-.result .r-desc {opacity:.94; font-size:1rem; margin-top:.2rem;}
-.ico {width:52px; height:52px; border-radius:16px; display:flex; align-items:center; justify-content:center;
-  font-size:1.6rem; background:linear-gradient(135deg,var(--a),var(--b)); margin-bottom:.8rem; box-shadow:0 10px 18px -12px var(--a);}
-.card-t {font-family:'Playfair Display',Georgia,serif; font-size:1.3rem; font-weight:600; color:#3B2A20;}
-.card-p {color:#7A6652; font-size:.93rem; margin-top:.25rem; line-height:1.5;}
+.result {background:#FFFDF9; border:1px solid #E6D9C3; border-left:6px solid var(--c); border-radius:14px;
+  padding:1.3rem 1.8rem; margin:1.2rem 0 1rem;}
+.result .r-top {font-size:.7rem; text-transform:uppercase; letter-spacing:.16em; color:#9A8470; font-weight:600;}
+.result .r-name {font-family:'Playfair Display',Georgia,serif; font-size:2.1rem; font-weight:600; line-height:1.25; color:#3B2A20;}
+.result .r-desc {color:#6B5644; font-size:.98rem; margin-top:.15rem;}
+.ico {width:46px; height:46px; border-radius:12px; display:flex; align-items:center; justify-content:center;
+  font-size:1.4rem; background:#F1E6D3; border:1px solid #E3D3B6; margin-bottom:.8rem;}
+.card-t {font-family:'Playfair Display',Georgia,serif; font-size:1.25rem; font-weight:600; color:#3B2A20;}
+.card-p {color:#7A6652; font-size:.92rem; margin-top:.25rem; line-height:1.5;}
 .step {display:flex; gap:.8rem; align-items:flex-start; margin:.5rem 0;}
-.step b.n {flex:0 0 28px; height:28px; border-radius:50%; background:#F3E9D8; border:1px solid #E6D4B6; color:#6F4E37;
-  display:flex; align-items:center; justify-content:center; font-size:.82rem;}
+.step b.n {flex:0 0 28px; height:28px; border-radius:50%; background:#F1E6D3; border:1px solid #E3D3B6; color:#6B4A35;
+  display:flex; align-items:center; justify-content:center; font-size:.8rem;}
 """
 
 
 def hero_html(cfg, chips=()):
-    a, b = cfg["grad"]
     ch = "".join(f'<span class="chip">{c}</span>' for c in chips)
-    return (f'<div class="hero" style="--a:{a};--b:{b}"><div class="t">{cfg["icon"]} {cfg["title"]}</div>'
+    return (f'<div class="hero"><div class="e">{cfg["icon"]} &nbsp;{cfg["page"]}</div><div class="t">{cfg["title"]}</div>'
             f'<div class="s">{cfg["tagline"]}</div>{ch}</div>')
 
 
@@ -386,7 +379,7 @@ def map_fig(seg: Seg, point=None, title="Carte des groupes (ACP)"):
     for c, n in enumerate(seg.names):
         m = seg.labels == c
         fig.add_trace(go.Scatter(x=seg.coords[m, 0], y=seg.coords[m, 1], mode="markers", name=n,
-                                 marker=dict(size=7, color=PALETTE[c], opacity=0.55)))
+                                 marker=dict(size=7, color=PALETTE[c], opacity=0.6)))
     if point is not None:
         fig.add_trace(go.Scatter(x=[point[0]], y=[point[1]], mode="markers", name="Votre saisie",
                                  marker=dict(size=22, symbol="star", color=DARK,
@@ -582,7 +575,7 @@ PAGES: dict = {}
 
 
 def page_home():
-    st.markdown('<div class="hero" style="--a:#3E271C;--b:#9C6B45"><div class="t">🧩 ClusterLab</div>'
+    st.markdown('<div class="hero"><div class="e">Segmentation · Machine learning</div><div class="t">ClusterLab</div>'
                 '<div class="s">Quatre modèles de segmentation dans une seule application : choisissez un jeu de données, '
                 'saisissez un profil et découvrez à quel groupe il appartient.</div>'
                 '<span class="chip">KMeans</span><span class="chip">CAH</span><span class="chip">ACP</span>'
@@ -600,8 +593,7 @@ def page_home():
             chips += '<span class="chip warn">Données à fournir</span>'
         with cols[i % 2]:
             with st.container(border=True):
-                a, b = cfg["grad"]
-                st.markdown(f'<div class="ico" style="--a:{a};--b:{b}">{cfg["icon"]}</div>'
+                st.markdown(f'<div class="ico">{cfg["icon"]}</div>'
                             f'<div class="card-t">{cfg["title"]}</div><div class="card-p">{cfg["tagline"]}</div>{chips}',
                             unsafe_allow_html=True)
                 st.write("")
