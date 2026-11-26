@@ -24,7 +24,10 @@ from sklearn.preprocessing import StandardScaler, normalize
 
 BASE = Path(__file__).parent
 DATA_DIRS = [BASE / "data", BASE]
-PALETTE = ["#4F46E5", "#06B6D4", "#F59E0B", "#EC4899", "#10B981", "#8B5CF6"]
+PALETTE = ["#6F4E37", "#D08C3F", "#B5523B", "#7A8B69", "#8E7F73", "#C9A227"]
+INK = "#3B2A20"
+DARK = "#2B1D15"
+GRID = "#EADFCB"
 YN = {0: "Non", 1: "Oui"}
 
 
@@ -35,7 +38,7 @@ def F(col, label, kind, **kw):
 # ───────────────────────────── Configuration des 4 modèles ─────────────────────────────
 MODELS: dict[str, dict] = {
     "customer": dict(
-        page="Clients télécom", icon="📱", grad=("#4F46E5", "#7C3AED"),
+        page="Clients télécom", icon="📱", grad=("#5C3D2E", "#9A6B47"),
         title="Segmentation des clients télécom",
         tagline="Un client est-il fidèle ou non ? Réponse à partir de son comportement d'usage.",
         file="Customer_dataset.csv", algo="CAH · liaison moyenne", k=2, ncols=3,
@@ -66,7 +69,7 @@ MODELS: dict[str, dict] = {
                "La CAH obtient une meilleure silhouette que le KMeans (k=3), d'où son choix pour le déploiement."],
     ),
     "heart": dict(
-        page="Insuffisance cardiaque", icon="🫀", grad=("#E11D48", "#F97316"),
+        page="Insuffisance cardiaque", icon="🫀", grad=("#5E2B22", "#A65A42"),
         title="Profils de patients en insuffisance cardiaque",
         tagline="Rapprochez un patient des 4 profils cliniques identifiés par KMeans.",
         file="heart_failure_clinical_records_dataset.csv", algo="KMeans", k=4, ncols=3,
@@ -97,7 +100,7 @@ MODELS: dict[str, dict] = {
         notice="Outil pédagogique de segmentation non supervisée. Il ne remplace pas un avis médical.",
     ),
     "wholesale": dict(
-        page="Clients grossiste", icon="🛒", grad=("#0891B2", "#10B981"),
+        page="Clients grossiste", icon="🛒", grad=("#4A3828", "#8F7452"),
         title="Segmentation des clients d'un grossiste",
         tagline="Regroupez les clients selon leurs dépenses annuelles par catégorie de produits.",
         file="Wholesale customers data.csv", algo="KMeans", k=4, ncols=3,
@@ -119,7 +122,7 @@ MODELS: dict[str, dict] = {
         notes=["Les dépenses sont en unités monétaires par an. Les groupes se chevauchent (silhouette modeste)."],
     ),
     "wheat": dict(
-        page="Graines de blé", icon="🌾", grad=("#CA8A04", "#65A30D"),
+        page="Graines de blé", icon="🌾", grad=("#6E5428", "#B8913F"),
         title="Classification des graines de blé",
         tagline="Réglez les 7 mesures morphologiques d'une graine et découvrez son groupe.",
         file="wheat_seeds_dataset.csv", algo="KMeans", k=4, ncols=2,
@@ -135,11 +138,12 @@ MODELS: dict[str, dict] = {
             F("length of kernel groove", "Longueur du sillon", "sfloat", step=0.001, fmt="%.3f"),
         ],
         pipeline=[
-            "Les 7 variables morphologiques sont utilisées **telles quelles**, sans standardisation (comme dans le notebook).",
+            "**Standardisation** (`StandardScaler`) des 7 variables morphologiques, pour qu'aucune ne domine les distances.",
             "**ACP à 2 composantes** pour la visualisation.",
             "**KMeans** à 4 classes (`init='random'`, 500 itérations), k choisi par la méthode du coude.",
         ],
-        notes=["Sans standardisation, les variables de grande échelle (aire, périmètre) pèsent davantage dans les distances."],
+        notes=["Contrairement au notebook d'origine, les variables sont standardisées : l'aire et le périmètre ne dominent plus le KMeans.",
+               "Après standardisation, le k optimal peut changer : vérifiez la silhouette pour k=3 et k=4 avant de figer le choix."],
     ),
 }
 for _k, _c in MODELS.items():
@@ -246,8 +250,9 @@ def build(key: str, df: pd.DataFrame) -> Seg:
     elif key == "wholesale":
         sc = StandardScaler().fit(np.log1p(A))
         to_model = lambda a: sc.transform(np.log1p(np.asarray(a, float)))  # noqa: E731
-    else:
-        to_model = lambda a: np.asarray(a, float)  # noqa: E731
+    else:  # wheat
+        sc = StandardScaler().fit(A)
+        to_model = lambda a: sc.transform(np.asarray(a, float))  # noqa: E731
     M = to_model(A)
 
     if key == "customer":
@@ -298,37 +303,52 @@ def predict(seg: Seg, values):
 
 # ───────────────────────────── Style ─────────────────────────────
 CSS = """
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-.stApp {font-family:'Inter',system-ui,sans-serif;}
-.block-container {padding-top:2.2rem; max-width:1180px;}
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap');
+.stApp {font-family:'Inter',system-ui,sans-serif; color:#3B2A20;
+  background:radial-gradient(1200px 500px at 85% -10%, #F3E7D3 0%, rgba(250,245,236,0) 60%), #FAF5EC;}
+.block-container {padding-top:2.4rem; max-width:1180px;}
 #MainMenu, footer {visibility:hidden;}
-h1,h2,h3,h4,h5 {letter-spacing:-.01em; font-weight:700;}
-section[data-testid="stSidebar"] {border-right:1px solid #E2E8F0;}
-.stTabs [data-baseweb="tab"] {font-weight:600; font-size:.98rem;}
-.hero {background:linear-gradient(135deg,var(--a),var(--b)); color:#fff; border-radius:24px;
-  padding:2rem 2.2rem 1.7rem; margin-bottom:1.1rem; box-shadow:0 18px 40px -20px var(--a);}
-.hero .t {font-size:2.05rem; font-weight:800; letter-spacing:-.02em; line-height:1.15;}
-.hero .s {margin-top:.55rem; font-size:1.02rem; opacity:.92; max-width:780px;}
-.chip {display:inline-block; padding:.22rem .72rem; border-radius:999px; font-size:.76rem; font-weight:600;
-  margin:.9rem .4rem 0 0; background:rgba(255,255,255,.2); color:#fff;}
-.chip.dark {background:#EEF2FF; color:#4338CA; margin:.7rem .35rem 0 0;}
-.chip.warn {background:#FEF3C7; color:#92400E; margin:.7rem .35rem 0 0;}
-.kpi {background:#fff; border:1px solid #E2E8F0; border-radius:16px; padding:.9rem 1.1rem;
-  box-shadow:0 1px 2px rgba(15,23,42,.04);}
-.kpi-l {font-size:.72rem; text-transform:uppercase; letter-spacing:.06em; color:#64748B; font-weight:600;}
-.kpi-v {font-size:1.6rem; font-weight:800; color:#0F172A; line-height:1.3;}
-.kpi-s {font-size:.78rem; color:#64748B;}
-.result {background:linear-gradient(135deg,var(--c),color-mix(in srgb,var(--c) 65%,#0F172A)); color:#fff;
-  border-radius:22px; padding:1.4rem 1.8rem; margin:1.1rem 0 .9rem; box-shadow:0 16px 32px -16px var(--c);}
-.result .r-top {font-size:.74rem; text-transform:uppercase; letter-spacing:.09em; opacity:.85; font-weight:600;}
-.result .r-name {font-size:2.1rem; font-weight:800; letter-spacing:-.02em; line-height:1.2;}
-.result .r-desc {opacity:.93; font-size:1rem; margin-top:.15rem;}
-.ico {width:50px; height:50px; border-radius:14px; display:flex; align-items:center; justify-content:center;
-  font-size:1.6rem; background:linear-gradient(135deg,var(--a),var(--b)); margin-bottom:.7rem;}
-.card-t {font-size:1.12rem; font-weight:700; color:#0F172A;}
-.card-p {color:#475569; font-size:.93rem; margin-top:.2rem;}
-.step {display:flex; gap:.8rem; align-items:flex-start; margin:.45rem 0;}
-.step b.n {flex:0 0 28px; height:28px; border-radius:50%; background:#EEF2FF; color:#4338CA;
+h1,h2,h3,h4,h5 {font-family:'Playfair Display',Georgia,serif; font-weight:600; letter-spacing:.005em; color:#3B2A20;}
+section[data-testid="stSidebar"] {background:#F4EBDB; border-right:1px solid #E6D9C3;}
+.stTabs [data-baseweb="tab-list"] {gap:.4rem; border-bottom:1px solid #E6D9C3;}
+.stTabs [data-baseweb="tab"] {font-weight:600; font-size:.96rem; color:#8A7360;}
+.stTabs [aria-selected="true"] {color:#6F4E37;}
+.stTabs [data-baseweb="tab-highlight"] {background-color:#6F4E37;}
+.stButton > button, .stFormSubmitButton > button, .stDownloadButton > button {border-radius:999px; font-weight:600;
+  border:1px solid #D9C7A8; background:#FFFDF8; color:#6F4E37; transition:all .15s ease;}
+.stButton > button:hover, .stDownloadButton > button:hover {border-color:#6F4E37; color:#6F4E37; background:#F7EEDD;}
+.stFormSubmitButton > button[kind="primaryFormSubmit"], .stFormSubmitButton > button {background:#6F4E37; color:#FFF8EC; border-color:#6F4E37; padding:.45rem 1.6rem;}
+.stFormSubmitButton > button:hover {background:#5A3E2B; color:#fff;}
+div[data-testid="stVerticalBlockBorderWrapper"] {border-radius:20px;}
+div[data-testid="stForm"] {border:none;}
+.hero {position:relative; overflow:hidden; background:linear-gradient(135deg,var(--a),var(--b)); color:#FFF8EC;
+  border-radius:26px; padding:2.3rem 2.5rem 2rem; margin-bottom:1.2rem; box-shadow:0 22px 44px -26px var(--a);}
+.hero::after {content:""; position:absolute; right:-70px; top:-90px; width:300px; height:300px; border-radius:50%;
+  background:radial-gradient(circle,rgba(255,240,215,.22),rgba(255,240,215,0) 70%);}
+.hero .t {font-family:'Playfair Display',Georgia,serif; font-size:2.35rem; font-weight:600; line-height:1.15; letter-spacing:.005em;}
+.hero .s {margin-top:.65rem; font-size:1.02rem; opacity:.92; max-width:760px; font-weight:400; line-height:1.55;}
+.chip {display:inline-block; padding:.24rem .78rem; border-radius:999px; font-size:.75rem; font-weight:600; letter-spacing:.02em;
+  margin:1rem .45rem 0 0; background:rgba(255,248,236,.16); border:1px solid rgba(255,248,236,.28); color:#FFF8EC;}
+.chip.dark {background:#F3E9D8; border:1px solid #E6D4B6; color:#6F4E37; margin:.8rem .35rem 0 0;}
+.chip.warn {background:#F8E6C8; border:1px solid #E9C98F; color:#8A5A12; margin:.8rem .35rem 0 0;}
+.kpi {background:#FFFDF8; border:1px solid #E6D9C3; border-radius:18px; padding:.95rem 1.15rem;
+  box-shadow:0 1px 2px rgba(80,50,30,.05), 0 10px 22px -18px rgba(80,50,30,.35);}
+.kpi-l {font-size:.7rem; text-transform:uppercase; letter-spacing:.1em; color:#9A8470; font-weight:600;}
+.kpi-v {font-family:'Playfair Display',Georgia,serif; font-size:1.75rem; font-weight:600; color:#3B2A20; line-height:1.3;}
+.kpi-s {font-size:.78rem; color:#8A7360;}
+.result {position:relative; overflow:hidden; background:linear-gradient(135deg,var(--c),color-mix(in srgb,var(--c) 55%,#2B1D15));
+  color:#FFF8EC; border-radius:24px; padding:1.6rem 2rem; margin:1.2rem 0 1rem; box-shadow:0 20px 36px -22px var(--c);}
+.result::after {content:""; position:absolute; right:-60px; top:-70px; width:220px; height:220px; border-radius:50%;
+  background:radial-gradient(circle,rgba(255,240,215,.2),rgba(255,240,215,0) 70%);}
+.result .r-top {font-size:.72rem; text-transform:uppercase; letter-spacing:.16em; opacity:.8; font-weight:600;}
+.result .r-name {font-family:'Playfair Display',Georgia,serif; font-size:2.3rem; font-weight:600; line-height:1.2;}
+.result .r-desc {opacity:.94; font-size:1rem; margin-top:.2rem;}
+.ico {width:52px; height:52px; border-radius:16px; display:flex; align-items:center; justify-content:center;
+  font-size:1.6rem; background:linear-gradient(135deg,var(--a),var(--b)); margin-bottom:.8rem; box-shadow:0 10px 18px -12px var(--a);}
+.card-t {font-family:'Playfair Display',Georgia,serif; font-size:1.3rem; font-weight:600; color:#3B2A20;}
+.card-p {color:#7A6652; font-size:.93rem; margin-top:.25rem; line-height:1.5;}
+.step {display:flex; gap:.8rem; align-items:flex-start; margin:.5rem 0;}
+.step b.n {flex:0 0 28px; height:28px; border-radius:50%; background:#F3E9D8; border:1px solid #E6D4B6; color:#6F4E37;
   display:flex; align-items:center; justify-content:center; font-size:.82rem;}
 """
 
@@ -353,8 +373,11 @@ def sil_quality(s: float) -> str:
 def style(fig, h=380):
     fig.update_layout(template="plotly_white", height=h, margin=dict(l=10, r=10, t=45, b=10),
                       paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
-                      font=dict(family="Inter, sans-serif", size=12),
+                      font=dict(family="Inter, sans-serif", size=12, color=INK),
+                      title_font=dict(family="Playfair Display, Georgia, serif", size=17, color=INK),
                       legend=dict(orientation="h", y=-0.18, x=0))
+    fig.update_xaxes(gridcolor=GRID, linecolor=GRID)
+    fig.update_yaxes(gridcolor=GRID, linecolor=GRID)
     return fig
 
 
@@ -366,9 +389,9 @@ def map_fig(seg: Seg, point=None, title="Carte des groupes (ACP)"):
                                  marker=dict(size=7, color=PALETTE[c], opacity=0.55)))
     if point is not None:
         fig.add_trace(go.Scatter(x=[point[0]], y=[point[1]], mode="markers", name="Votre saisie",
-                                 marker=dict(size=22, symbol="star", color="#0F172A",
-                                             line=dict(color="white", width=2))))
-    fig.update_xaxes(title=f"PC1", zeroline=False)
+                                 marker=dict(size=22, symbol="star", color=DARK,
+                                             line=dict(color="#FAF5EC", width=2))))
+    fig.update_xaxes(title="PC1", zeroline=False)
     fig.update_yaxes(title="PC2", zeroline=False)
     fig.update_layout(title=title)
     return style(fig)
@@ -458,7 +481,7 @@ def predict_tab(key, cfg, seg: Seg):
         fig = go.Figure()
         fig.add_bar(y=seg.short, x=seg.z.iloc[c].values, orientation="h", name=f"Moyenne · {seg.names[c]}",
                     marker_color=PALETTE[c], opacity=0.5)
-        fig.add_bar(y=seg.short, x=z_in, orientation="h", name="Votre saisie", marker_color="#0F172A")
+        fig.add_bar(y=seg.short, x=z_in, orientation="h", name="Votre saisie", marker_color=DARK)
         fig.update_layout(barmode="group", title="Profil comparé au groupe")
         fig.update_yaxes(autorange="reversed")
         fig.update_xaxes(title="Écart à la moyenne (en écarts-types)")
@@ -477,7 +500,7 @@ def explore_tab(key, cfg, df, seg: Seg):
         st.plotly_chart(map_fig(seg))
 
     lim = float(min(3, max(1, np.abs(seg.z.values).max())))
-    fig = px.imshow(seg.z.T.values, x=seg.names, y=seg.short, color_continuous_scale="RdBu_r",
+    fig = px.imshow(seg.z.T.values, x=seg.names, y=seg.short, color_continuous_scale=[[0, "#4F6D7A"], [0.5, "#FAF5EC"], [1, "#8B4A2B"]],
                     zmin=-lim, zmax=lim, aspect="auto", text_auto=".2f")
     fig.update_layout(title="Profil de chaque groupe (écart à la moyenne générale, en écarts-types)",
                       coloraxis_colorbar=dict(title="σ"))
@@ -492,7 +515,7 @@ def explore_tab(key, cfg, df, seg: Seg):
     ex = seg.extra
     if "compare" in ex:
         fig = go.Figure(go.Bar(x=list(ex["compare"]), y=[round(v, 3) for v in ex["compare"].values()],
-                               marker_color=[PALETTE[1], PALETTE[0]], text=[f"{v:.3f}" for v in ex["compare"].values()],
+                               marker_color=[PALETTE[4], PALETTE[0]], text=[f"{v:.3f}" for v in ex["compare"].values()],
                                textposition="outside"))
         fig.update_layout(title="Indice de silhouette : KMeans vs CAH", showlegend=False)
         fig.update_yaxes(range=[0, 1])
@@ -559,7 +582,7 @@ PAGES: dict = {}
 
 
 def page_home():
-    st.markdown('<div class="hero" style="--a:#4F46E5;--b:#06B6D4"><div class="t">🧩 ClusterLab</div>'
+    st.markdown('<div class="hero" style="--a:#3E271C;--b:#9C6B45"><div class="t">🧩 ClusterLab</div>'
                 '<div class="s">Quatre modèles de segmentation dans une seule application : choisissez un jeu de données, '
                 'saisissez un profil et découvrez à quel groupe il appartient.</div>'
                 '<span class="chip">KMeans</span><span class="chip">CAH</span><span class="chip">ACP</span>'
